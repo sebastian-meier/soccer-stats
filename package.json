@@ -1,0 +1,27 @@
+{
+  "name": "soccer-stats",
+  "version": "1.0.0",
+  "description": "soccer predictions",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sebastian-meier/soccer-stats.git"
+  },
+  "author": "Sebastian Meier @seb_meier",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/sebastian-meier/soccer-stats/issues"
+  },
+  "homepage": "https://github.com/sebastian-meier/soccer-stats#readme",
+  "dependencies": {
+    "better-sqlite3": "^4.1.1",
+    "csv-parse": "^2.4.0",
+    "fs": "0.0.1-security",
+    "json2csv": "^4.1.3",
+    "moment": "^2.22.2",
+    "request": "^2.87.0"
+  }
+}

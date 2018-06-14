@@ -1,0 +1,232 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang=""> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8" lang=""> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9" lang=""> <![endif]-->
+<!--[if gt IE 8]><!--> <html lang="de"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>FIFA World Cup - A data-driven exploration</title>
+  <meta name="description" content="An interactiv visualization to learn more about the upcoming matches in the FIFA world cup 2018 in Russia." />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <link rel="apple-touch-icon" sizes="180x180" href="https://www.vislab.io/projects/world-cup/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://www.vislab.io/projects/world-cup/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://www.vislab.io/projects/world-cup/favicon-16x16.png">
+  <link rel="manifest" href="https://www.vislab.io/projects/world-cup/site.webmanifest">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="msapplication-TileImage" content="https://www.vislab.io/projects/world-cup/mstile-150x150.png">
+  <meta name="msapplication-TileColor" content="#2b5797">
+  <meta name="theme-color" content="#ffffff">
+
+  <meta name="apple-mobile-web-app-title" content="FIFA World Cup - A data-driven exploration">
+  <meta name="application-name" content="FIFA World Cup - A data-driven exploration">
+
+  <link type="text/plain" rel="author" href="https://www.vislab.io/projects/world-cup/humans.txt" />
+  <link rel="icon" type="image/x-icon" href="https://www.vislab.io/projects/world-cup/favicon.ico" />
+  <link rel="shortcut icon" type="image/x-icon" href="https://www.vislab.io/projects/world-cup/favicon.ico" />
+  <link rel="icon" type="image/png" href="https://www.vislab.io/projects/world-cup/favicon-32x32.png" />
+
+  <!-- FACEBOOK -->
+  <meta property="og:url" content="https://www.vislab.io/projects/world-cup/index.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="FIFA World Cup - A data-driven exploration">
+  <meta property="og:image" content="https://www.vislab.io/projects/world-cup/social_media.jpg">
+  <meta property="og:image:width" content="1065">
+  <meta property="og:image:height" content="569">
+  <meta property="og:description" content="An interactiv visualization to learn more about the upcoming matches in the FIFA world cup 2018 in Russia.">
+  <meta property="og:site_name" content="FIFA World Cup - A data-driven exploration">
+
+  <!-- TWITTER -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@seb_meier">
+  <meta name="twitter:creator" content="@seb_meier">
+  <meta name="twitter:url" content="https://www.vislab.io/projects/world-cup/index.html">
+  <meta name="twitter:title" content="FIFA World Cup - A data-driven exploration">
+  <meta name="twitter:description" content="An interactiv visualization to learn more about the upcoming matches in the FIFA world cup 2018 in Russia.">
+  <meta name="twitter:image" content="https://www.vislab.io/projects/world-cup/social_media.jpg">
+
+  <link href='./css/style.css' rel='stylesheet' />
+</head>
+<body>
+  <div id="header">
+    <svg></svg>
+    <div id="hitles">
+      <h1>FIFA World Cup 2018</h1>
+      <h2>A data-driven exploration</h2>
+      <p>by <a href="http://www.twitter.com/seb_meier">@seb_meier</a> / <a href="http://www.vislab.io">VISLAB.io</a></p>
+    </div>
+  </div>
+  <div id="intro">
+    <p style="font-size:20px;">The 2018 FIFA world cup starts on June 13th. Over the last few days we explored the official FIFA data on each participating team. You can use the interactive visualization below to learn more about the upcoming matches and how the teams performed over the last few months.</p>
+    <p style="text-align:center;"><svg width="50" height="50"><g transform="translate(25, 25)"><rect width="35.35533905932738" height="35.35533905932738" x="-17.67766952966369" y="-17.67766952966369" class="match_icon_bg" style="transform: rotate(45deg);"></rect><path class="match_icon_home" d="M0,-15.128557083761152L-15.128557083761152,0L0,15.128557083761152M0,-15.128557083761152Z"></path><path class="match_icon_away" d="M0,-22.400012575449185L22.400012575449185,0L0,22.400012575449185M0,-22.400012575449185Z"></path></g></svg></p>
+    <p style="padding-top:0;">The diamond shape compares the FIFA rankings of two teams in the top 70 of the world list. The bigger the area on one side the stronger the team. In the example above the red team is ranked lower than the blue team.</p>
+    <p style="text-align:center;"><img src="./assets/touch@2x.png" alt="Pointer" /></p>
+    <p style="padding-top:0;">Click on the "more" link behind each match to get more details on the opponents.</p> 
+    <p class="small" style="padding-bottom:50px;"><strong>Personal Note</strong>: While we are happy to see the world compete in a sports event instead of fighting each other, we do not support the capitalist and corporate infused agendas of modern mass sports events. We neither support bringing such games to countries which do not respect human rights, free press, free speech and equal rights to all regardless of their gender, beliefs, sexual orientation, colour of skin or any other made up reason.</p>
+    <p id="mobile-note">
+      This website is optimized for tablets and desktop computers. The experience on a smartphone might be limited.
+    </p>
+  </div>
+  <div id="container">
+    <h2>Upcoming Matches</h2>
+    <div id="matches">
+      <table>
+        <thead>
+          <tr>
+            <th class="mt-datetime">Date,&nbsp;Time&nbsp;&amp;&nbsp;Location</th>
+            <th class="mt-team1">Team I</th>
+            <th class="mt-rank">Rank I</th>
+            <th class="mt-score">Score I</th>
+            <th class="mt-compare">FIFA-Comparison</th>
+            <th class="mt-score">Score II</th>
+            <th class="mt-rank">Rank II</th>
+            <th class="mt-team2">Team II</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr>
+            <th class="mt-datetime">Date,&nbsp;Time&nbsp;&amp;&nbsp;Location</th>
+            <th class="mt-team1">Team I</th>
+            <th class="mt-rank">Rank I</th>
+            <th class="mt-score">Score-I</th>
+            <th class="mt-compare">FIFA-Comparison</th>
+            <th class="mt-score">Score-II</th>
+            <th class="mt-rank">Rank II</th>
+            <th class="mt-team2">Team II</th>
+            <th></th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div id="team-selection">
+      <p>You can also select other combinations</p>
+      <select id="op1"></select><br />
+      <select id="op2"></select><br />
+      <button id="compare-button">Compare Teams</button>
+    </div>
+    <div id="team-details">
+      <div id="team-header">
+        <h2>Opponent Analysis</h2>
+      </div>
+      <div id="team-head"></div>
+      <div id="rank-header">
+        <h2>Historic Rankings</h2>
+        <p>
+          Official FIFA ranking<br />
+          <img src="./assets/legend-icon-home.svg" />&nbsp;<span id="rank-legend-t1"></span>&nbsp;&nbsp;<span id="rank-legend-t2"></span>&nbsp;<img src="./assets/legend-icon-away.svg" />
+        </p>
+      </div>
+      <div class="team-body" id="rank-body"></div>
+      <div id="game-header">
+        <h2>Recent performance</h2>
+        <p>
+          Last 10 games
+        </p>
+      </div>
+      <div class="game-body" id="game-body">
+        <div id="game-body1">
+          <table>
+            <thead>
+              <tr>
+                <th class="gm-time">Date&nbsp;&amp;&nbsp;Location</th>
+                <th class="gm-importance">Importance</th>
+                <th class="gm-opponent">Opponent</th>
+                <th class="gm-score1"></th>
+                <th class="gm-compare"></th>
+                <th class="gm-score2"></th>
+                <th class="gm-team">Team</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+            </tbody>
+            <tfoot>
+              <tr>
+                <th class="gm-time">Date&nbsp;&amp;&nbsp;Location</th>
+                <th class="gm-importance">Importance</th>
+                <th class="gm-opponent">Opponent</th>
+                <th class="gm-score1"></th>
+                <th class="gm-compare"></th>
+                <th class="gm-score2"></th>
+                <th class="gm-team">Team</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div id="game-body2">
+          <table>
+            <thead>
+              <tr>
+                <th class="gm-team">Team</th>
+                <th class="gm-score2"></th>
+                <th class="gm-compare"></th>
+                <th class="gm-score1"></th>
+                <th class="gm-opponent">Opponent</th>
+                <th class="gm-importance">Importance</th>
+                <th class="gm-time">Date&nbsp;&amp;&nbsp;Location</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+            </tbody>
+            <tfoot>
+              <tr>
+                <th class="gm-team">Team</th>
+                <th class="gm-score2"></th>
+                <th class="gm-compare"></th>
+                <th class="gm-score1"></th>
+                <th class="gm-opponent">Opponent</th>
+                <th class="gm-importance">Importance</th>
+                <th class="gm-time">Date&nbsp;&amp;&nbsp;Location</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div id="game-between">
+          <p>
+            All games since 01/2017<br />
+            <span style="font-weight:200;">Importance of the game: low <img src="./assets/size-legend.svg" /> high<br />
+            High Win <img src="./assets/color-legend.svg" /> High Defeat</span>
+          </p>
+        </div>
+        <div id="game-mds1"></div>
+        <div id="game-mds2"></div>
+      </div>
+      <div class="team-body" id="historic-head">
+        <span id="historic-middle">Previous Matches</span>
+        <div id="historic-floater">
+          <span id="historic-left">Left</span>
+          <span id="historic-right">Right</span>
+        </div>
+      </div>
+      <div class="team-body" id="historic-body"></div>
+    </div>
+  </div>
+  <div id="attribution">
+    <h2>Attribution</h2>
+    <ul>
+      <li>Data: <a href="http://www.fifa.com/fifa-world-ranking/ranking-table/men/index.html">FIFA</a></li>
+      <li>Dev:<a href="https://d3js.org/">D3</a> & <a href="https://github.com/topojson/topojson-client">TopoJson</a>, <a href="https://momentjs.com/">momentjs</a>, <a href="https://github.com/proj4js/proj4js">proj4js</a></li>
+      <li><a href="https://github.com/lipis/flag-icon-css">Flags</a> by lipis</li>
+      <li><a href="https://github.com/lukes/ISO-3166-Countries-with-Regional-Codes/">Country Codes by lukes</li>
+      <li><a href="https://github.com/lsv/fifa-worldcup-2018">Stadium Locations</a> by lsv</li>
+    </ul>
+  </div>
+  <div id="footer">
+    <a href="http://www.vislab.io"><img src="./assets/logo_highres.png" alt="VISLAB.io" /></a><br />
+    <a href="mailto:contact@sebastianmeier.eu">contact@sebastianmeier.eu</a>&nbsp;|&nbsp;<a href="http://www.twitter.com/seb_meier">@seb_meier</a><br /><br />
+    <a href="https://www.vislab.io/legal.html">Privacy Statement / Datenschutz</a>&nbsp;|&nbsp;<a href="https://www.vislab.io/legal.html">Legal note / Impressum</a>
+    
+  </div>
+  <script src="js/moment.min.js"></script>
+  <script src="js/proj4.js"></script>
+  <script src="js/d3.v5.min.js"></script>
+  <script src="js/topojson-client.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
