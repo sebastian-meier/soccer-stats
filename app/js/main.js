@@ -61,7 +61,7 @@ Promise.all(mapFiles.map(url => d3.json(url))).then(function(mapData) {
 			.attr('x2','0%')
 			.attr('y1','0%')
 			.attr('y2','100%')
-			.html('<stop offset="0%" stop-color="rgba(255,255,255,0)" /><stop offset="100%" stop-color="rgba(255,255,255,1)" />')
+			.html('<stop offset="0%" stop-color="#fff" stop-opacity="0" /><stop offset="100%" stop-color="#fff" stop-opacity="1" />')
 
 		let map_overlay = map_svg.append('rect')
 			.style('fill','url(#mapGradient)')
@@ -126,6 +126,10 @@ d3.csv('https://vislab.lupus.uberspace.de/fifa/world-cup-matches.csv')
   			return 0
 		})
 
+		teams.forEach((m,mi)=>{
+			team_keys[m.id] = mi
+		})
+
 		d3.select('#op1').selectAll('option').data(teams).enter().append('option').attr('value',d=>d.id).text(d=>d.name)
 		d3.select('#op2').selectAll('option').data(teams).enter().append('option').attr('value',d=>d.id).text(d=>d.name)
 
@@ -140,8 +144,12 @@ d3.csv('https://vislab.lupus.uberspace.de/fifa/world-cup-matches.csv')
 		d3.select('#compare-button').on('click', ()=>{
 			let v1 = d3.select('#op1').property('value')
 			let v2 = d3.select('#op2').property('value')
-			buildDetails(v1,v2)
+			if(!isNaN(v1)&&!isNaN(v2)&&v1>0&&v2>0){
+				buildDetails(v1,v2)
+			}
 		})
+
+		d3.select('#op2').property('value', '--');
 
 		let rows = d3.select('#matches tbody').selectAll('tr').data(csv).enter().append('tr')
 		rows.append('td')
@@ -201,6 +209,19 @@ d3.csv('https://vislab.lupus.uberspace.de/fifa/world-cup-matches.csv')
 
 const buildDetails = (id1, id2)=>{
 
+	let head = d3.select('#team-head'),
+		body = d3.select('#rank-body'),
+		hbody = d3.select('#historic-body')
+
+	head.selectAll('*').remove()
+	body.selectAll('*').remove()
+	hbody.selectAll('*').remove()
+	d3.selectAll('#rank-legend-t1 *, #rank-legend-t2 *').remove()
+
+	d3.select('#game-body').style('display','none')
+
+	head.append('span').html('Loading...').attr('style', 'display:block;width:100%;text-align:center;padding:50px 0;')
+
 	id1 = parseInt(id1)
 	id2 = parseInt(id2)
 
@@ -208,6 +229,10 @@ const buildDetails = (id1, id2)=>{
 		awayId = (id1<id2)?id2:id1
 
 	Promise.all(new Array("https://vislab.lupus.uberspace.de/fifa/profiles/"+homeId+".json", "https://vislab.lupus.uberspace.de/fifa/profiles/"+awayId+".json", "https://vislab.lupus.uberspace.de/fifa/matches/"+homeId+"-"+awayId+".json").map(url => d3.json(url))).then(function(files) {
+
+		head.selectAll('*').remove()
+		d3.select('#game-body').style('display','block')
+
 
 		new Array(files[0],files[1]).forEach((f,fi)=>{
 			f.rankings.forEach((r,ri)=>{
@@ -221,17 +246,8 @@ const buildDetails = (id1, id2)=>{
 			rank_height = 360,
 			rank_margin = 50
 
-		let head = d3.select('#team-head'),
-			body = d3.select('#rank-body'),
-			hbody = d3.select('#historic-body')
 
 		rank_width = (body.node().getBoundingClientRect()).width
-
-		head.selectAll('*').remove()
-		body.selectAll('*').remove()
-		hbody.selectAll('*').remove()
-
-		d3.selectAll('#rank-legend-t1 *, #rank-legend-t2 *').remove()
 
 		d3.select('#rank-legend-t1').append('span').text(files[0].name)
 		d3.select('#rank-legend-t2').append('span').text(files[1].name)
@@ -745,11 +761,11 @@ const buildDetails = (id1, id2)=>{
 			mds_svg = [], 
 			mds_g = [], 
 			mds_y_axis_g = [], 
-			mds_x_axis_g = [], 
-			mds_container = [],
+			mds_x_axis_g = [], win_chance = [],
+			mds_container = [], mds_trend = [], mds_reg_data = [], mds_dist_data = []
 			mds_x_label = [], mds_y_label = [], mds_x_line = [], mds_x_label1 = [], 
 			mds_x_label2 = [], rank_extent = [], mds_y_line = [], mds_y_label1 = [],
-			mds_y_label2 = [], mds_circles = []
+			mds_y_label2 = [], mds_circles = [], mds_tooltip = [], mds_tooltip_label = [], mds_tooltip_bg = [], mds_tooltip_link = []
 
 		new Array(1,2).forEach(side=>{
 			let container = d3.select('#game-body'+side+' tbody')
@@ -775,6 +791,8 @@ const buildDetails = (id1, id2)=>{
 					resultPenalty2 = m['scorePenalty'+keyC2],
 					points1 = m['r'+keyS1+'points'],
 					points2 = m['r'+keyS2+'points'],
+					name1 = m['t'+keyS1+'name'],
+					name2 = m['t'+keyS2+'name'],
 					rank1 = m['rankseq'+keyC1],
 					rank2 = m['rankseq'+keyC2],
 					win = 0,
@@ -806,6 +824,8 @@ const buildDetails = (id1, id2)=>{
 				files[side-1].matches[mi].scorePenaltyAway=resultPenalty2
 				files[side-1].matches[mi].points1=points1
 				files[side-1].matches[mi].points2=points2
+				files[side-1].matches[mi].name1=name1
+				files[side-1].matches[mi].name2=name2
 				files[side-1].matches[mi].rank1=rank1
 				files[side-1].matches[mi].rank2=rank2
 				files[side-1].matches[mi].venueName=m.venueName.trim()
@@ -945,25 +965,138 @@ const buildDetails = (id1, id2)=>{
 					.style('transform', 'rotate(-90deg)')
 			}
 
+			let reg_data = [], dist_data = []
+
+			let t1 = teams[team_keys[files[side-1].id]],
+				t2 = teams[team_keys[files[((side==1)?1:0)].id]]
+
+			files[side-1].matches.forEach(m=>{
+				let rank_dist = Math.abs((t2.rank-t1.rank)-(m.rank2-m.rank1))
+					//time_dist = moment().diff(moment(m.matchDate))
+
+				dist_data.push({
+					rank:rank_dist,
+					rank1:m.rank1,
+					rank2:m.rank2,
+					score1:m.scoreHome,
+					score2:m.scoreAway,
+					win:m.win,
+					diff:m.diff
+				})
+
+				reg_data.push({
+					x:(m.rank1-m.rank2),
+					y:m.win*-1,
+				})
+			})
+
+			let x_mean = d3.mean(reg_data, d=>d.x),
+				y_mean = d3.mean(reg_data, d=>d.y),
+				term1 = 0,
+				term2 = 0
+
+	        for (let i = 0; i < reg_data.length; i++) {
+	            let xr = reg_data[i].x - x_mean;
+	            let yr = reg_data[i].y - y_mean;
+	            term1 += xr * yr;
+	            term2 += xr * xr;
+	        }
+
+	        let b1 = term1 / term2,
+	        	b0 = y_mean - (b1 * x_mean),
+				yhat = []
+
+	        for (let i = 0; i < reg_data.length; i++) {
+	            reg_data[i]['yhat'] = b0 + (reg_data[i].x * b1);
+	        }
+
+	        reg_data.sort((a,b)=>{
+				if (a.x < b.x) {
+	    			return -1
+	  			}else if (a.x > b.x) {
+	    			return 1
+	  			}
+	  			return 0
+	        })
+
+	        dist_data.sort((a,b)=>{
+				if (a.rank < b.rank) {
+	    			return -1
+	  			}else if (a.rank > b.rank) {
+	    			return 1
+	  			}
+	  			return 0
+	        })
+
+	        win_chance[side-1] = reg_data[reg_data.length-1].yhat + (reg_data[reg_data.length-1].yhat - reg_data[0].yhat)/(reg_data[reg_data.length-1].x - reg_data[0].x) * (t1.rank-t2.rank)
+
+	        mds_reg_data[side-1] = reg_data
+	        mds_dist_data[side-1] = dist_data
+
+	        mds_trend[side-1] = mds_g[side-1].append('line')
+	        	.style('stroke', 'rgba(0,0,0,0.2)')
+	        	.attr('x1', mds_x_scale[side-1](mds_reg_data[side-1][0].x))
+	        	.attr('x2', mds_x_scale[side-1](mds_reg_data[side-1][mds_reg_data[side-1].length-1].x))
+	        	.attr('y1', mds_y_scale[side-1](mds_reg_data[side-1][0].yhat))
+	        	.attr('y2', mds_y_scale[side-1](mds_reg_data[side-1][mds_reg_data[side-1].length-1].yhat))
+
 			mds_circles[side-1] = mds_g[side-1].selectAll('circle').data(files[side-1].matches).enter().append('circle')
 				.attr('cx', d=>mds_x_scale[side-1]((d.rank1-d.rank2)))
 				.attr('cy', d=>mds_y_scale[side-1](d.win*-1))
 				.attr('r',d=>mds_r_scale[side-1](importance[d.cupKindID][0]))
 				.style('fill', d=>mds_color_scale[side-1](d.win*-1))
+				.on('mouseover',function(d){
+					mds_tooltip[side-1]
+						.style('display','block')
+						.style('transform', 'translate('+mds_x_scale[side-1]((d.rank1-d.rank2))+'px,'+mds_y_scale[side-1](d.win*-1)+'px)')
 
+					mds_tooltip_label[side-1]
+						.text(d.result1+':'+d.result2+' '+d.name2)
+						.attr('dx', (mds_x_scale[side-1]((d.rank1-d.rank2)) > mds_width/2)?-20:20)
+						.style('text-anchor', (mds_x_scale[side-1]((d.rank1-d.rank2)) > mds_width/2)?'end':'start')
 
-			files[side-1].matches.forEach(m=>{
-				let t1 = teams[team_keys[files[side-1].id]],
-					t2 = teams[team_keys[files[((side==1)?1:0)].id]]
+					let tlength = (mds_tooltip_label[side-1].node().getBoundingClientRect()).width
 
-				let rank_dist = Math.abs((t2.rank-t1.rank)-(m.rank2-m.rank1)),
-					time_dist = moment().diff(moment(m.matchDate))
+					mds_tooltip_bg[side-1]
+						.attr('x', (mds_x_scale[side-1]((d.rank1-d.rank2)) > mds_width/2)?-(tlength+23):(17))
+						.attr('width', tlength+6)
 
+					mds_tooltip_link[side-1]
+						.attr('x1', (mds_x_scale[side-1]((d.rank1-d.rank2)) > mds_width/2)?-(tlength+23):(17))
+						.attr('x2', (mds_x_scale[side-1]((d.rank1-d.rank2)) > mds_width/2)?-mds_r_scale[side-1](importance[d.cupKindID][0]):mds_r_scale[side-1](importance[d.cupKindID][0]))
 
+				})
+				.on('mouseout',function(d){
+					mds_tooltip[side-1].style('display','none')
+				})
 
-			})
+			mds_tooltip[side-1] = mds_g[side-1].append('g')
+				.style('pointer-events','none')
+				.style('display','none')
 
+			mds_tooltip_bg[side-1] = mds_tooltip[side-1].append('rect')
+				.attr('height', 11)
+				.attr('y', -6)
+				.style('stroke-width',5)
+				.style('stroke-linejoin','round')
+				.style('stroke-linecap','round')
+				.style('stroke',(side==1)?'#FF1560':'#0E85F2')
+				.style('fill',(side==1)?'#FF1560':'#0E85F2')
+
+			mds_tooltip_link[side-1] = mds_tooltip[side-1].append('line')
+				.attr('y1',0)
+				.attr('y2',0)
+				.style('stroke',(side==1)?'#FF1560':'#0E85F2')
+
+			mds_tooltip_label[side-1] = mds_tooltip[side-1].append('text')
+				.attr('dy',3)
+				.style('fill','#fff')
+				.style('font-size','10px')
 		})
+
+	    //console.log(mds_dist_data)
+	    let avg_win = Math.round(win_chance[0]+win_chance[1])/2
+	    console.log(win_chance[0],win_chance[1], (win_chance[0]+win_chance[1])/2)
 
 		window.addEventListener("resize", debounce(()=>{
 
@@ -1085,6 +1218,10 @@ const buildDetails = (id1, id2)=>{
 				mds_circles[side-1]
 					.attr('cx', d=>mds_x_scale[side-1]((d.rank1-d.rank2)))
 					.attr('cy', d=>mds_y_scale[side-1](d.win*-1))
+
+				mds_trend[side-1]
+		        	.attr('x1', mds_x_scale[side-1](mds_reg_data[side-1][0].x))
+		        	.attr('x2', mds_x_scale[side-1](mds_reg_data[side-1][mds_reg_data[side-1].length-1].x))
 			})
 		}), 250);
 

@@ -1,55 +1,34 @@
-const 	sqlite = require('better-sqlite3'),
-		db = new sqlite(__dirname + '/sport.db'),
-		fs = require('fs'),
-		moment = require('moment')
+const 	fs = require('fs'),
+		path = require('path'),
+		request = require('curl'),
+		csv = require('csv-parse'),
+		moment = require('moment'),
+		sqlite = require('better-sqlite3'),
+		db = new sqlite(__dirname + '/fifa.db'),
+		express = require('express'),
+      	http = require('http'),
+      	json2csv = require('json2csv').parse,
+      	config = {
+      		port:4848
+      	}
 
-//Load teams
-let teams = db.prepare("SELECT * FROM teams").all([]),
-	team_keys = new Map(teams.map((r,i)=>{return [r.id, i];})),
-	match_keys = new Map(),
-	matches = []
+const	collect_matches = require('./modules/01-fifa-collect-matches-18.js'),
+		build_fifa = require('./modules/04-fifa-build.js'),
+		build_games = require('./modules/06-build-games.js')
 
-teams.forEach(t=>{
-	teams.forEach(tt=>{
-		if(t.id != tt.id && t.id < tt.id){
-			matches.push({
-				id1:t.id,
-				id2:tt.id,
-				matches:[]
+
+let app = express()
+
+app.get('/collect/teams', (req, res, next) => {
+	collect_matches.collect(db, fs, moment, csv, request, ()=>{
+		build_fifa.collect(db, fs, moment, csv, path, ()=>{
+			build_games.collect(db, fs, moment, csv, json2csv, path, ()=>{
+				return res.status(200).json({ message: 'New Build done.' })
 			})
-			match_keys.set(t.id+'-'+tt.id, matches.length-1)
-		}
+		})
 	})
 })
 
-//Create folder for static stat files (faster loading, no backend required)
-const stat_path = __dirname + '/static/'
-if (!fs.existsSync(stat_path)) {
-	fs.mkdirSync(stat_path)
-}
-
-//Load all world-cup matches and associate them with their respective teams and group by match
-let games = db.prepare("SELECT * FROM games").all([])
-
-games.forEach(g=>{
-	matches[match_keys.get((g.team1_id < g.team2_id)?g.team1_id+'-'+g.team2_id:g.team2_id+'-'+g.team1_id)].matches.push(g)
-})
-
-matches.forEach(m=>{
-	let csv = 'date,score1,score2,et,p'
-	m.matches.forEach(mm=>{
-		if(moment(mm.play_at).format('YYYY')==2018){
-			console.log(mm)
-		}
-		csv += '\n'
-		csv += moment(mm.play_at).format('YYYY-MM')
-		if(mm.score1p != null){
-			csv += ','+mm.score1p+','+mm.score2p+',1,1'
-		}else if(mm.score1et != null){
-			csv += ','+mm.score1et+','+mm.score2et+',1,0'
-		}else{
-			csv += ','+mm.score1+','+mm.score2+',0,0'
-		}
-	})
-	fs.writeFileSync(stat_path + m.id1+'-'+m.id2+'.csv', csv, 'utf8')
-})
+app.listen(config.port, function() {
+ console.log("Listening on " + config.port);
+});
